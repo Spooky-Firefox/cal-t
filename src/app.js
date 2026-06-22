@@ -241,6 +241,15 @@ let wRange = 30;   // days; 0 = All
 let cRange = 30;
 let cMode  = 'daily';
 
+// Dirty flags: set when data changes while dashboard is not visible.
+// Charts are rebuilt lazily when the dashboard tab is activated.
+let wDirty = false;
+let cDirty = false;
+
+function dashboardVisible() {
+  return document.getElementById('tab-dashboard').classList.contains('active');
+}
+
 const tickCfg = {
   maxTicksLimit: 12,
   color: '#718096',
@@ -353,20 +362,24 @@ function initCharts() {
 }
 
 function refreshWeightChart() {
+  if (!dashboardVisible()) { wDirty = true; return; }
   const { labels, line, dots } = buildWeightDataset(getWeightEntries(), wRange);
   wChart.data.labels             = labels;
   wChart.data.datasets[0].data   = line;
   wChart.data.datasets[1].data   = dots;
   wChart.resetZoom();
   wChart.update('none');
+  wDirty = false;
 }
 
 function refreshCalChart() {
+  if (!dashboardVisible()) { cDirty = true; return; }
   const { labels, data } = buildCalDataset(getCalEntries(), cRange, cMode);
   cChart.data.labels           = labels;
   cChart.data.datasets[0].data = data;
   cChart.resetZoom();
   cChart.update('none');
+  cDirty = false;
 }
 
 // ════════════════════════════════════════════════════════════ Presets render ══
