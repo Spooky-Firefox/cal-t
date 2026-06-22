@@ -16,10 +16,6 @@ spec:
         app: cal-t
     spec:
       automountServiceAccountToken: false
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 101      # nginx user in nginx:alpine
-        runAsGroup: 101
       containers:
         - name: cal-t
           # Imported directly into k3s containerd via:
@@ -51,6 +47,3 @@ spec:
             periodSeconds: 30
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false   # nginx writes /var/cache/nginx
-            capabilities:
-              drop: ["ALL"]
