@@ -75,11 +75,11 @@ function delPreset(id) {
 /** Return the YYYY-MM-DD portion of a datetime-local string. */
 function toDateStr(ts) { return ts.slice(0, 10); }
 
-/** Add n days to a YYYY-MM-DD string, returns YYYY-MM-DD. */
+/** Add n days to a YYYY-MM-DD string, returns YYYY-MM-DD.
+ *  Uses Date.UTC throughout to avoid timezone/DST issues. */
 function addDays(dateStr, n) {
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
 }
 
 /** Difference in days: b − a (both YYYY-MM-DD). DST-safe via UTC. */
@@ -90,12 +90,15 @@ function daysDiff(a, b) {
   return (db - da) / msPerDay;
 }
 
-/** YYYY-MM-DD of (today − days). Returns null when days is falsy (All). */
+/** YYYY-MM-DD of (today − days) in local time. Returns null when days is falsy (All).
+ *  Uses local date components so the result matches stored datetime-local timestamps. */
 function cutoffDate(days) {
   if (!days) return null;
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  return d.toISOString().slice(0, 10);
+  const now = new Date();
+  const d   = new Date(now.getFullYear(), now.getMonth(), now.getDate() - days);
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
 }
 
 /**
