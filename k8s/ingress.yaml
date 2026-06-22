@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cal-t
+  namespace: cal-t
+  annotations:
+    # Uncomment to add TLS via cert-manager:
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: calt.ronstad.se
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cal-t
+                port:
+                  number: 80
+  # Uncomment once cert-manager / a wildcard cert is in place:
+  # tls:
+  #   - hosts:
+  #       - calt.ronstad.se
+  #     secretName: cal-t-tls

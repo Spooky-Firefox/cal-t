@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cal-t</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header>
+    <span class="logo">cal-t</span>
+    <nav>
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn"        data-tab="log">Log</button>
+      <button class="tab-btn"        data-tab="presets">Presets</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ── Dashboard ─────────────────────────────────────────────────────── -->
+    <section id="tab-dashboard" class="tab-content active">
+
+      <div class="chart-block">
+        <div class="chart-header">
+          <h2>Weight</h2>
+          <div class="range-btns">
+            <button data-chart="weight" data-range="7">1W</button>
+            <button data-chart="weight" data-range="30" class="active">1M</button>
+            <button data-chart="weight" data-range="90">3M</button>
+            <button data-chart="weight" data-range="365">1Y</button>
+            <button data-chart="weight" data-range="0">All</button>
+          </div>
+          <button id="resetZoomWeight" class="btn-reset">↺ Reset zoom</button>
+        </div>
+        <div class="chart-legend">
+          <span class="dot blue"></span>Interpolated &nbsp;&nbsp;
+          <span class="dot orange"></span>Measured
+        </div>
+        <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
+      </div>
+
+      <div class="chart-block">
+        <div class="chart-header">
+          <h2>Calories</h2>
+          <div class="range-btns">
+            <button data-chart="cal" data-range="7">1W</button>
+            <button data-chart="cal" data-range="30" class="active">1M</button>
+            <button data-chart="cal" data-range="90">3M</button>
+            <button data-chart="cal" data-range="365">1Y</button>
+            <button data-chart="cal" data-range="0">All</button>
+          </div>
+          <div class="toggle-btns">
+            <button id="calModeDaily"  class="active">Daily</button>
+            <button id="calModeWeekly">Weekly</button>
+          </div>
+          <button id="resetZoomCal" class="btn-reset">↺ Reset zoom</button>
+        </div>
+        <div class="chart-wrap"><canvas id="calChart"></canvas></div>
+      </div>
+
+    </section>
+
+    <!-- ── Log ───────────────────────────────────────────────────────────── -->
+    <section id="tab-log" class="tab-content">
+
+      <div class="form-row">
+
+        <div class="card">
+          <h2>Add Weight</h2>
+          <form id="weightForm">
+            <label>Date &amp; Time
+              <input type="datetime-local" id="weightDate" required />
+            </label>
+            <label>Weight (kg)
+              <input type="number" id="weightVal"
+                     step="0.1" min="1" max="500"
+                     placeholder="e.g. 75.5" required />
+            </label>
+            <button type="submit">Save weight</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Add Calories</h2>
+          <form id="calForm">
+            <label>Date &amp; Time
+              <input type="datetime-local" id="calDate" required />
+            </label>
+            <label>Preset
+              <select id="calPreset">
+                <option value="">— none —</option>
+              </select>
+            </label>
+            <label>Label
+              <input type="text" id="calLabel"
+                     placeholder="e.g. Lunch" maxlength="100" />
+            </label>
+            <label>Calories (kcal)
+              <input type="number" id="calVal"
+                     step="1" min="0" max="99999"
+                     placeholder="e.g. 500" required />
+            </label>
+            <button type="submit">Save calories</button>
+          </form>
+        </div>
+
+      </div>
+
+      <div class="card">
+        <h2>Recent entries
+          <span class="hint"> — scroll over a chart to zoom, drag to pan</span>
+        </h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>When</th><th>Item</th><th>Value</th><th></th></tr>
+            </thead>
+            <tbody id="recentBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── Presets ────────────────────────────────────────────────────────── -->
+    <section id="tab-presets" class="tab-content">
+
+      <div class="card preset-card">
+        <h2>Food Presets</h2>
+        <p class="preset-note">
+          Editing a preset only affects future entries — existing calorie
+          records keep their original values.
+        </p>
+        <form id="presetForm">
+          <input type="hidden" id="presetEditId" />
+          <label>Name
+            <input type="text" id="presetName"
+                   required placeholder="e.g. Banana" maxlength="100" />
+          </label>
+          <label>Calories (kcal)
+            <input type="number" id="presetCal"
+                   step="1" min="0" max="99999"
+                   required placeholder="e.g. 90" />
+          </label>
+          <div class="btn-row">
+            <button type="submit">Save preset</button>
+            <button type="button" id="presetCancel" hidden>Cancel</button>
+          </div>
+        </form>
+
+        <table>
+          <thead>
+            <tr><th>Name</th><th>kcal</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="presetsBody"></tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!--
+    CDN scripts — pinned to exact versions.
+    To add SRI hashes run:
+      curl -s https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js | \
+        openssl dgst -sha384 -binary | openssl base64 -A
+    and prefix with "sha384-".
+  -->
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"
+          crossorigin="anonymous"></script>
+
+  <script src="app.js"></script>
+</body>
+</html>

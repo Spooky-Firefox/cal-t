@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cal-t
+  namespace: cal-t
+  labels:
+    app: cal-t
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cal-t
+  template:
+    metadata:
+      labels:
+        app: cal-t
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101      # nginx user in nginx:alpine
+        runAsGroup: 101
+      containers:
+        - name: cal-t
+          # Replace REGISTRY with your local registry, e.g.:
+          #   registry.localhost:5000/cal-t:latest
+          #   192.168.1.x:5000/cal-t:latest
+          image: REGISTRY/cal-t:TAG
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          resources:
+            requests:
+              cpu:    "10m"
+              memory: "32Mi"
+            limits:
+              cpu:    "100m"
+              memory: "64Mi"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false   # nginx writes /var/cache/nginx
+            capabilities:
+              drop: ["ALL"]

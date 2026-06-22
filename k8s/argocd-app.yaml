@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cal-t
+  namespace: argocd
+  # Finalizer ensures ArgoCD deletes the k8s resources when this app is removed
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    # Replace with your actual git remote URL, e.g.:
+    #   https://github.com/youruser/cal-t.git
+    #   git@github.com:youruser/cal-t.git
+    repoURL: REPO_URL
+    targetRevision: HEAD
+    path: k8s
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cal-t
+
+  syncPolicy:
+    automated:
+      prune: true       # remove k8s objects deleted from git
+      selfHeal: true    # revert manual kubectl changes
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
