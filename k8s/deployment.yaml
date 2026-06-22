@@ -22,11 +22,10 @@ spec:
         runAsGroup: 101
       containers:
         - name: cal-t
-          # Replace REGISTRY with your local registry, e.g.:
-          #   registry.localhost:5000/cal-t:latest
-          #   192.168.1.x:5000/cal-t:latest
-          image: REGISTRY/cal-t:TAG
-          imagePullPolicy: Always
+          # Imported directly into k3s containerd via:
+          #   docker save cal-t:latest | sudo k3s ctr images import -
+          image: docker.io/library/cal-t:latest
+          imagePullPolicy: Never
           ports:
             - name: http
               containerPort: 80
